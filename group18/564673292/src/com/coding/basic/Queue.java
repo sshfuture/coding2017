@@ -21,7 +21,7 @@ public class Queue<E> {
     }
     
     public boolean isEmpty(){
-        return linkedList.size() == 0 ? true : false;
+        return linkedList.size() == 0;
     }
     
     public int size(){

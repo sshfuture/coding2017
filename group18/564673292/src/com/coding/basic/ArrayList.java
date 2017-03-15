@@ -1,5 +1,6 @@
 package com.coding.basic;
 
+// better to implement with generics
 public class ArrayList<E> implements List<E>, Iterable<E>{
     private E[] array;
     private int lastIndex;
@@ -13,6 +14,7 @@ public class ArrayList<E> implements List<E>, Iterable<E>{
     }
 
     public void add(E object){
+        // ensureCapacity(cap) method
         if(lastIndex == length){
             this.grow();
         }
@@ -29,6 +31,7 @@ public class ArrayList<E> implements List<E>, Iterable<E>{
     }
 
     public void insert(int index, E o) {
+        // warning: didn't invoke grow()
         if(index > lastIndex - 1) throw new IndexOutOfBoundsException();
         for (int i = lastIndex; i > index; i--) {
             array[i] = array[i - 1];
@@ -71,12 +74,13 @@ public class ArrayList<E> implements List<E>, Iterable<E>{
         }
 
         public boolean hasNext(){
-            return (itrCurIndex + 1) > lastIndex - 1 ? false: true;
+            return (itrCurIndex + 1) <= lastIndex - 1;
         }
 
         @SuppressWarnings("unchecked")
         public E next(){
             if(this.hasNext()){
+
                 return (E)this.arrayList.get(++itrCurIndex);
             }else{
                 itrCurIndex = -1;
@@ -86,6 +90,7 @@ public class ArrayList<E> implements List<E>, Iterable<E>{
 
         @SuppressWarnings("unchecked")
         public E remove(){
+
             return (E)this.arrayList.remove(itrCurIndex);
         }
     }

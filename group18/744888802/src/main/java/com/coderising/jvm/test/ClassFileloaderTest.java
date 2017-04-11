@@ -23,7 +23,7 @@ public class ClassFileloaderTest {
 	
 	private static final String FULL_QUALIFIED_CLASS_NAME = "com/coderising/jvm/test/EmployeeV1";
 	
-	static String path1 = "C:\\Users\\liuxin\\git\\coding2017\\liuxin\\mini-jvm\\bin";
+	static String path1 = "D:\\mywork\\coding2017\\group18\\744888802\\target\\classes";
 	static String path2 = "C:\\temp";
 	
 	static ClassFile clzFile = null;

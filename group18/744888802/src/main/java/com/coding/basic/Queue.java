@@ -1,6 +1,8 @@
 package com.coding.basic;
 
-public class Queue extends LinkedList{
+import com.coding.basic.linklist.LinkedList;
+
+public class Queue extends LinkedList {
 
 	//队列尾部加一个
 	public void enQueue(Object o){

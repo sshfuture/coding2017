@@ -1,4 +1,7 @@
-package com.coding.basic;
+package com.coding.basic.stack;
+
+import com.coding.basic.Iterator;
+import com.coding.basic.linklist.LinkedList;
 
 public class Stack extends LinkedList {
 //	private ArrayList elementData = new ArrayList();
@@ -43,5 +46,14 @@ public class Stack extends LinkedList {
 	}
 	public int size(){
 		return super.size();
+	}
+
+	public void print(){
+
+		Iterator  iterator = super.iterator();
+		while (iterator.hasNext()){
+			System.out.println(iterator.next());
+		}
+
 	}
 }

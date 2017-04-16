@@ -24,6 +24,9 @@ public class ClassFileParser {
         classFile.setConstPool(parseConstantPool(byteCodeIterator));
         classFile.setAccessFlag(parseAccessFlag(byteCodeIterator));
         classFile.setClassIndex(parseClassInfex(byteCodeIterator));
+        parseInterfaces(byteCodeIterator);
+        parseFidld(classFile,byteCodeIterator);
+        parseMethod(classFile,byteCodeIterator);
 
         return classFile;
     }
@@ -109,5 +112,21 @@ public class ClassFileParser {
         return constantPool;
     }
 
+    private void parseInterfaces(ByteCodeIterator iter) {
+        int interfaceCount = iter.nextU2ToInt();
 
+        System.out.println("interfaceCount:" + interfaceCount);
+
+        // TODO : 如果实现了interface, 这里需要解析
+    }
+
+    private void parseFidld(ClassFile clz,ByteCodeIterator iterator){
+
+
+
+    }
+
+    private void parseMethod(ClassFile clz,ByteCodeIterator iterator){
+
+    }
 }

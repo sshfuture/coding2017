@@ -1,6 +1,6 @@
 package com.coderising.jvm.constant;
 
-public class FieldRefInfo extends ConstantInfo{
+public class FieldRefInfo extends ConstantInfo {
 	private int type = ConstantInfo.FIELD_INFO;
 	private int classInfoIndex;
 	private int nameAndTypeIndex;
@@ -27,7 +27,7 @@ public class FieldRefInfo extends ConstantInfo{
 	
 	public String toString(){
 		
-		NameAndTypeInfo  typeInfo = (NameAndTypeInfo)this.getConstantInfo(this.getNameAndTypeIndex());
+		NameAndTypeInfo typeInfo = (NameAndTypeInfo)this.getConstantInfo(this.getNameAndTypeIndex());
 		
 		return getClassName() +" : "+  typeInfo.getName() + ":" + typeInfo.getTypeInfo() +"]";
 	}
@@ -43,12 +43,16 @@ public class FieldRefInfo extends ConstantInfo{
 	}
 	
 	public String getFieldName(){
-		NameAndTypeInfo  typeInfo = (NameAndTypeInfo)this.getConstantInfo(this.getNameAndTypeIndex());
+		NameAndTypeInfo typeInfo = (NameAndTypeInfo)this.getConstantInfo(this.getNameAndTypeIndex());
 		return typeInfo.getName();		
 	}
 	
 	public String getFieldType(){
-		NameAndTypeInfo  typeInfo = (NameAndTypeInfo)this.getConstantInfo(this.getNameAndTypeIndex());
+		NameAndTypeInfo typeInfo = (NameAndTypeInfo)this.getConstantInfo(this.getNameAndTypeIndex());
 		return typeInfo.getTypeInfo();	
+	}
+	@Override
+	public void accept(Visitor visitor) {
+		visitor.visitFieldRef(this);		
 	}
 }

@@ -1,7 +1,7 @@
 package com.coderising.jvm.constant;
 
 public class NameAndTypeInfo extends ConstantInfo{
-	public  int type = ConstantInfo.NAME_AND_TYPE_INFO;
+	public  int type = NAME_AND_TYPE_INFO;
 	
 	private int index1;
 	private int index2;
@@ -41,5 +41,11 @@ public class NameAndTypeInfo extends ConstantInfo{
 	
 	public String toString(){
 		return "(" + getName() + "," + getTypeInfo()+")";
+	}
+
+	@Override
+	public void accept(Visitor visitor) {
+		visitor.visitNameAndType(this);
+		
 	}
 }

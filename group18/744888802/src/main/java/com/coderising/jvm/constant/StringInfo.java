@@ -1,6 +1,6 @@
 package com.coderising.jvm.constant;
 
-public class StringInfo extends ConstantInfo{
+public class StringInfo extends ConstantInfo {
 	private int type = ConstantInfo.STRING_INFO;
 	private int index;
 	public StringInfo(ConstantPool pool) {
@@ -21,6 +21,12 @@ public class StringInfo extends ConstantInfo{
 	
 	public String toString(){
 		return this.getConstantPool().getUTF8String(index);
+	}
+
+	@Override
+	public void accept(Visitor visitor) {
+		visitor.visitString(this);
+		
 	}
 	
 }

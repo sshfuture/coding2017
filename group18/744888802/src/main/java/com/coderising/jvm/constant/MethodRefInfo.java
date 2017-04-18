@@ -2,7 +2,7 @@ package com.coderising.jvm.constant;
 
 public class MethodRefInfo extends ConstantInfo {
 	
-	private int type = ConstantInfo.METHOD_INFO;
+	private int type = METHOD_INFO;
 	
 	private int classInfoIndex;	
 	private int nameAndTypeIndex;
@@ -33,21 +33,26 @@ public class MethodRefInfo extends ConstantInfo {
 		return getClassName() +" : "+ this.getMethodName() + " : " + this.getParamAndReturnType() ;
 	}
 	public String getClassName(){
-		ConstantPool pool = this.getConstantPool();		
+		ConstantPool pool = this.getConstantPool();
 		ClassInfo clzInfo = (ClassInfo)pool.getConstantInfo(this.getClassInfoIndex());
 		return clzInfo.getClassName();
 	}
 	
 	public String getMethodName(){
 		ConstantPool pool = this.getConstantPool();
-		NameAndTypeInfo  typeInfo = (NameAndTypeInfo)pool.getConstantInfo(this.getNameAndTypeIndex());
+		NameAndTypeInfo typeInfo = (NameAndTypeInfo)pool.getConstantInfo(this.getNameAndTypeIndex());
 		return typeInfo.getName();
 	}
 	
 	public String getParamAndReturnType(){
 		ConstantPool pool = this.getConstantPool();
-		NameAndTypeInfo  typeInfo = (NameAndTypeInfo)pool.getConstantInfo(this.getNameAndTypeIndex());
+		NameAndTypeInfo typeInfo = (NameAndTypeInfo)pool.getConstantInfo(this.getNameAndTypeIndex());
 		return typeInfo.getTypeInfo();
+	}
+
+	@Override
+	public void accept(Visitor visitor) {
+		visitor.visitMethodRef(this);		
 	}
 	
 	

@@ -1,117 +1,137 @@
 package com.coderising.jvm.loader;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.util.Arrays;
-
 import com.coderising.jvm.clz.AccessFlag;
 import com.coderising.jvm.clz.ClassFile;
 import com.coderising.jvm.clz.ClassIndex;
 import com.coderising.jvm.constant.*;
-import com.coderising.jvm.util.Util;
+import com.coderising.jvm.field.Field;
+import com.coderising.jvm.method.Method;
+
+import java.io.UnsupportedEncodingException;
 
 public class ClassFileParser {
 
     public ClassFile parse(byte[] codes) {
-        ByteCodeIterator byteCodeIterator = new ByteCodeIterator(codes);
-        String megic = byteCodeIterator.nextU4ToString();
-        if (!"cafebabe".equals(megic)) {
-            throw new RuntimeException("  this is not a java class");
+
+
+        ClassFile clzFile = new ClassFile();
+
+        ByteCodeIterator iter = new ByteCodeIterator(codes);
+
+        String magicNumber = iter.nextU4ToHexString();
+
+        if (!"cafebabe".equals(magicNumber)) {
+            return null;
         }
-        ClassFile classFile = new ClassFile();
-        classFile.setMinorVersion(byteCodeIterator.nextU2ToInt());
-        classFile.setMajorVersion(byteCodeIterator.nextU2ToInt());
-        classFile.setConstPool(parseConstantPool(byteCodeIterator));
-        classFile.setAccessFlag(parseAccessFlag(byteCodeIterator));
-        classFile.setClassIndex(parseClassInfex(byteCodeIterator));
-        parseInterfaces(byteCodeIterator);
-        parseFidld(classFile,byteCodeIterator);
-        parseMethod(classFile,byteCodeIterator);
 
-        return classFile;
+        clzFile.setMinorVersion(iter.nextU2ToInt());
+        clzFile.setMajorVersion(iter.nextU2ToInt());
+
+        ConstantPool pool = parseConstantPool(iter);
+        clzFile.setConstPool(pool);
+
+        AccessFlag flag = parseAccessFlag(iter);
+        clzFile.setAccessFlag(flag);
+
+        ClassIndex clzIndex = parseClassInfex(iter);
+        clzFile.setClassIndex(clzIndex);
+
+        parseInterfaces(iter);
+
+        parseFileds(clzFile, iter);
+
+        parseMethods(clzFile, iter);
+
+        return clzFile;
     }
-
 
     private AccessFlag parseAccessFlag(ByteCodeIterator iter) {
 
-        return new AccessFlag(iter.nextU2ToInt());
+        AccessFlag flag = new AccessFlag(iter.nextU2ToInt());
+
+        return flag;
     }
 
     private ClassIndex parseClassInfex(ByteCodeIterator iter) {
+
         int thisClassIndex = iter.nextU2ToInt();
         int superClassIndex = iter.nextU2ToInt();
-        ClassIndex classIndex = new ClassIndex();
-        classIndex.setThisClassIndex(thisClassIndex);
-        classIndex.setSuperClassIndex(superClassIndex);
-        return classIndex;
+
+        ClassIndex clzIndex = new ClassIndex();
+
+        clzIndex.setThisClassIndex(thisClassIndex);
+        clzIndex.setSuperClassIndex(superClassIndex);
+
+        return clzIndex;
 
     }
 
     private ConstantPool parseConstantPool(ByteCodeIterator iter) {
-        int poolCount = iter.nextU2ToInt();
-        ConstantPool constantPool = new ConstantPool();
-        for (int i = 0; i < poolCount; i++) {
-            if(i == 0){
-                constantPool.addConstantInfo(new NullConstantInfo());
 
-                continue;
-            }
+        int constPoolCount = iter.nextU2ToInt();
 
-            int typeInt = iter.nextU1ToInt();
-            if (typeInt == ConstantInfo.CLASS_INFO) {
-                ClassInfo constantInfo = new ClassInfo(constantPool);
-                constantInfo.setUtf8Index(iter.nextU2ToInt());
-                constantPool.addConstantInfo(constantInfo);
+        //System.out.println("Constant Pool Count :" + constPoolCount);
 
-            } else if (typeInt == ConstantInfo.UTF8_INFO) {
-                UTF8Info utf8Info = new UTF8Info(constantPool);
-                int length = iter.nextU2ToInt();
-                utf8Info.setLength(length);
+        ConstantPool pool = new ConstantPool();
+
+        pool.addConstantInfo(new NullConstantInfo());
+
+        for (int i = 1; i <= constPoolCount - 1; i++) {
+
+            int tag = iter.nextU1toInt();
+
+            if (tag == 7) {
+                // Class Info
+                int utf8Index = iter.nextU2ToInt();
+                ClassInfo clzInfo = new ClassInfo(pool);
+                clzInfo.setUtf8Index(utf8Index);
+
+                pool.addConstantInfo(clzInfo);
+            } else if (tag == 1) {
+                // UTF-8 String
+                int len = iter.nextU2ToInt();
+                byte[] data = iter.getBytes(len);
+                String value = null;
                 try {
-                    utf8Info.setValue(new String(iter.nextBytesByLength(length), "UTF-8"));
+                    value = new String(data, "UTF-8");
                 } catch (UnsupportedEncodingException e) {
                     e.printStackTrace();
                 }
-                constantPool.addConstantInfo(utf8Info);
 
-            } else if (typeInt == ConstantInfo.METHOD_INFO) {
-
-                MethodRefInfo methodRefInfo = new MethodRefInfo(constantPool);
-                methodRefInfo.setClassInfoIndex(iter.nextU2ToInt());
-                methodRefInfo.setNameAndTypeIndex(iter.nextU2ToInt());
-                constantPool.addConstantInfo(methodRefInfo);
-
-            } else if (typeInt == ConstantInfo.FIELD_INFO) {
-
-                FieldRefInfo fieldRefInfo = new FieldRefInfo(constantPool);
-                fieldRefInfo.setClassInfoIndex(iter.nextU2ToInt());
-                fieldRefInfo.setNameAndTypeIndex(iter.nextU2ToInt());
-                constantPool.addConstantInfo(fieldRefInfo);
-
-            } else if (typeInt == ConstantInfo.STRING_INFO) {
-
-                StringInfo stringInfo = new StringInfo(constantPool);
-                stringInfo.setIndex(iter.nextU2ToInt());
-                constantPool.addConstantInfo(stringInfo);
-
-            } else if (typeInt == ConstantInfo.NAME_AND_TYPE_INFO) {
-
-                NameAndTypeInfo nameAndTypeInfo = new NameAndTypeInfo(constantPool);
-                nameAndTypeInfo.setIndex1(iter.nextU2ToInt());
-                nameAndTypeInfo.setIndex2(iter.nextU2ToInt());
-                constantPool.addConstantInfo(nameAndTypeInfo);
-
+                UTF8Info utf8Str = new UTF8Info(pool);
+                utf8Str.setLength(len);
+                utf8Str.setValue(value);
+                pool.addConstantInfo(utf8Str);
+            }else if (tag == 8) {
+                StringInfo info = new StringInfo(pool);
+                info.setIndex(iter.nextU2ToInt());
+                pool.addConstantInfo(info);
+            } else if (tag == 9) {
+                FieldRefInfo field = new FieldRefInfo(pool);
+                field.setClassInfoIndex(iter.nextU2ToInt());
+                field.setNameAndTypeIndex(iter.nextU2ToInt());
+                pool.addConstantInfo(field);
+            } else if (tag == 10) {
+                // MethodRef
+                MethodRefInfo method = new MethodRefInfo(pool);
+                method.setClassInfoIndex(iter.nextU2ToInt());
+                method.setNameAndTypeIndex(iter.nextU2ToInt());
+                pool.addConstantInfo(method);
+            } else if (tag == 12) {
+                // Name and Type Info
+                NameAndTypeInfo nameType = new NameAndTypeInfo(pool);
+                nameType.setIndex1(iter.nextU2ToInt());
+                nameType.setIndex2(iter.nextU2ToInt());
+                pool.addConstantInfo(nameType);
             } else {
-                System.out.println("typeInt:" + typeInt);
-
-                throw new RuntimeException("cannot analysis type");
+                throw new RuntimeException("the constant pool tag " + tag + " has not been implemented yet.");
             }
         }
 
+        System.out.println("Finished reading Constant pool ");
 
-        return constantPool;
+        return pool;
     }
-
     private void parseInterfaces(ByteCodeIterator iter) {
         int interfaceCount = iter.nextU2ToInt();
 
@@ -120,13 +140,26 @@ public class ClassFileParser {
         // TODO : 如果实现了interface, 这里需要解析
     }
 
-    private void parseFidld(ClassFile clz,ByteCodeIterator iterator){
+    private void parseFileds(ClassFile clzFile, ByteCodeIterator iter) {
+        int fieldCount = iter.nextU2ToInt();
 
-
+        for (int i = 1; i <= fieldCount; i++) {
+            Field f = Field.parse(clzFile.getConstantPool(), iter);
+            clzFile.addField(f);
+        }
 
     }
 
-    private void parseMethod(ClassFile clz,ByteCodeIterator iterator){
+    private void parseMethods(ClassFile clzFile, ByteCodeIterator iter) {
+
+        int methodCount = iter.nextU2ToInt();
+        System.out.println("methodCount:"+methodCount);
+
+        for (int i = 1; i <= methodCount; i++) {
+            Method m = Method.parse(clzFile, iter);
+            clzFile.addMethod(m);
+        }
 
     }
+
 }

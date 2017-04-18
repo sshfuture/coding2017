@@ -1,7 +1,7 @@
 package com.coderising.jvm.constant;
 
 public class ClassInfo extends ConstantInfo {
-	private int type = ConstantInfo.CLASS_INFO;
+	private int type = CLASS_INFO;
 	private int utf8Index ;
 	public ClassInfo(ConstantPool pool) {
 		super(pool);
@@ -20,5 +20,9 @@ public class ClassInfo extends ConstantInfo {
 		int index = getUtf8Index();
 		UTF8Info utf8Info = (UTF8Info)constantPool.getConstantInfo(index);
 		return utf8Info.getValue();		
+	}
+	@Override
+	public void accept(Visitor visitor) {
+		visitor.visitClassInfo(this);		
 	}
 }
